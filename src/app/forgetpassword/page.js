@@ -28,13 +28,13 @@ export default function ForgotPassword() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Sanitize input
     const sanitizedValue = value.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
-    
-    setForm(prev => ({ 
-      ...prev, 
-      [name]: sanitizedValue 
+
+    setForm(prev => ({
+      ...prev,
+      [name]: sanitizedValue
     }));
 
     // Auto-submit OTP when 6 digits are entered
@@ -78,7 +78,7 @@ export default function ForgotPassword() {
 
   const handleSendOTP = async (e) => {
     if (e) e.preventDefault();
-    
+
     if (loading) return;
 
     if (!validateEmail(form.email)) return;
@@ -91,7 +91,7 @@ export default function ForgotPassword() {
 
       const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "X-Requested-With": "XMLHttpRequest"
         },
@@ -129,6 +129,7 @@ export default function ForgotPassword() {
     } catch (error) {
       if (error.name === 'AbortError') {
         toast.error("Request timeout. Please try again.");
+        console.log("email error:", error)
       } else {
         toast.error("Network error. Please check your connection.");
       }
@@ -148,7 +149,7 @@ export default function ForgotPassword() {
 
       const res = await fetch("/api/auth/resend-otp", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "X-Requested-With": "XMLHttpRequest"
         },
@@ -196,7 +197,7 @@ export default function ForgotPassword() {
 
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "X-Requested-With": "XMLHttpRequest"
         },
@@ -239,7 +240,7 @@ export default function ForgotPassword() {
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
-    
+
     if (loading) return;
 
     if (!validatePassword(form.newPassword, form.confirmPassword)) return;
@@ -252,7 +253,7 @@ export default function ForgotPassword() {
 
       const res = await fetch("/api/auth/reset-password", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "X-Requested-With": "XMLHttpRequest"
         },
@@ -270,7 +271,7 @@ export default function ForgotPassword() {
 
       if (res.ok) {
         toast.success("Password reset successful! 🎉", { duration: 3000 });
-        
+
         setTimeout(() => {
           router.push("/login");
         }, 2000);
@@ -338,7 +339,7 @@ export default function ForgotPassword() {
         </div>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
+        <div
           className="bg-[#de5422] h-2 rounded-full transition-all duration-500"
           style={{ width: `${(step / 3) * 100}%` }}
         ></div>
@@ -363,7 +364,7 @@ export default function ForgotPassword() {
         <h2 className="text-3xl font-bold text-center text-[#de5422] mb-2">
           {getStepTitle()}
         </h2>
-        
+
         <p className="text-center text-gray-600 mb-6">
           {getStepDescription()}
         </p>
@@ -371,9 +372,9 @@ export default function ForgotPassword() {
         <ProgressBar />
 
         <form onSubmit={
-          step === 1 ? handleSendOTP : 
-          step === 2 ? (e) => { e.preventDefault(); handleVerifyOTP(); } : 
-          handleResetPassword
+          step === 1 ? handleSendOTP :
+            step === 2 ? (e) => { e.preventDefault(); handleVerifyOTP(); } :
+              handleResetPassword
         }>
           {/* Step 1: Email Input */}
           {step === 1 && (
