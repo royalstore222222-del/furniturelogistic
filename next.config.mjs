@@ -9,6 +9,10 @@ const nextConfig = {
       },
     ],
   },
+  webpack: (config) => {
+    config.resolve.alias['@'] = require('path').resolve('./src');
+    return config;
+  },
 };
 
 export default nextConfig;
