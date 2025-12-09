@@ -80,10 +80,10 @@ export default function Login() {
       return false;
     }
 
-    //if (form.password.length < 6) {
-    //toast.error("Password must be at least 6 characters long");
-    //return false;
-    //}
+    if (form.password.length < 6) {
+    toast.error("Password must be at least 6 characters long");
+    return false;
+    }
 
     // Check if account is locked and reset if lock period has expired
     const savedLockUntil = localStorage.getItem("loginLockUntil");
@@ -159,7 +159,10 @@ export default function Login() {
         // Specific error messages based on status code
         switch (res.status) {
           case 401:
-            toast.error(errorData.message || "Invalid email or password");
+            toast.error(errorData.message || "Invalid password");
+            break;
+          case 404:
+            toast.error(errorData.message || "Email not found");
             break;
           case 403:
             toast.error("Account suspended or inactive");
@@ -253,6 +256,7 @@ export default function Login() {
               value={form.password}
               onChange={handleChange}
               required
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$"//one upercase,one lowercase,one number,one special character at least 6 character
               disabled={lockUntil && Date.now() < lockUntil}
               className="border border-gray-300 rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-1 focus:ring-[#de5422] disabled:bg-gray-100 disabled:cursor-not-allowed pr-12"
 
