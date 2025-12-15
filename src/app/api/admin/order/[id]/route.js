@@ -1,17 +1,17 @@
 import { connectDB } from "@/lib/db";
 import Order from "@/models/Order";
 import User from "@/models/User";
+import { verifyAdminAuth } from "@/lib/adminAuth";
 
 // ✅ PATCH: Update order status (Admin only)
 export async function PATCH(req, { params }) {
   try {
     await connectDB();
 
-    const userId = req.headers.get("x-user-id");
-    const user = await User.findById(userId);
+    const auth = await verifyAdminAuth();
 
-    if (!user || user.role !== "admin") {
-      return Response.json({ error: "Unauthorized" }, { status: 403 });
+    if (!auth.authenticated) {
+      return Response.json({ error: auth.error || "Unauthorized" }, { status: 401 });
     }
 
     const { status } = await req.json();

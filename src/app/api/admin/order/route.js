@@ -4,11 +4,18 @@ import User from "@/models/User";
 import DeliveryRoute from "@/models/DeliveryRoute";
 import Product from "@/models/Product";
 import { NextResponse } from "next/server";
+import { verifyAdminAuth } from "@/lib/adminAuth";
 
 // ✅ GET: All orders (Admin only)
 export async function GET() {
   try {
     await connectDB();
+
+    // Verify Admin
+    const auth = await verifyAdminAuth();
+    if (!auth.authenticated) {
+      return NextResponse.json({ error: auth.error || "Unauthorized" }, { status: 401 });
+    }
 
     // Populate user aur product details
     const orders = await Order.find()
@@ -33,10 +40,9 @@ export async function PATCH(req) {
   try {
     await connectDB();
 
-    const userId = req.headers.get("x-user-id");
-    const user = await User.findById(userId);
-    if (!user || user.role !== "admin") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    const auth = await verifyAdminAuth();
+    if (!auth.authenticated) {
+      return NextResponse.json({ error: auth.error || "Unauthorized" }, { status: 401 });
     }
 
     const { orderId, routeId, deliveryDate, action } = await req.json();

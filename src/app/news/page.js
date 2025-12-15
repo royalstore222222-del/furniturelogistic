@@ -25,10 +25,10 @@ export default function BlogsPage() {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const res = await fetch("/api/blog");
-        if (!res.ok) throw new Error("Failed to fetch blogs");
+        const res = await fetch("/api/news");
+        if (!res.ok) throw new Error("Failed to fetch news");
         const data = await res.json();
-        const blogsData = data.blogs || [];
+        const blogsData = data.news || [];
         setBlogs(blogsData);
         setFilteredBlogs(blogsData);
       } catch (err) {
@@ -111,7 +111,7 @@ export default function BlogsPage() {
             <div className="inline-flex items-center gap-2 rounded-full px-4 py-0 mb-6  "></div>
 
             <h1 className="text-4xl md:text-6xl font-bold text-black mb-6 leading-tight">
-              Our <span className="text-white">Blog</span>
+              Our <span className="text-white">News</span>
             </h1>
             <p className="text-lg md:text-xl text-white mb-12 font-light max-w-2xl mx-auto leading-relaxed">
               Discover expert insights, industry trends, and valuable resources
@@ -171,11 +171,10 @@ export default function BlogsPage() {
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${
-                  selectedCategory === category
-                    ? "bg-[#de5422] text-white shadow-md shadow-orange-200"
-                    : "bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 hover:border-slate-300"
-                }`}
+                className={`px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${selectedCategory === category
+                  ? "bg-[#de5422] text-white shadow-md shadow-orange-200"
+                  : "bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 hover:border-slate-300"
+                  }`}
               >
                 {category.charAt(0).toUpperCase() + category.slice(1)}
               </button>
@@ -204,11 +203,10 @@ export default function BlogsPage() {
                       setSelectedCategory(category);
                       setShowMobileFilters(false);
                     }}
-                    className={`p-3 rounded-lg text-sm font-medium transition-all ${
-                      selectedCategory === category
-                        ? "bg-[#de5422] text-white shadow-sm"
-                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                    }`}
+                    className={`p-3 rounded-lg text-sm font-medium transition-all ${selectedCategory === category
+                      ? "bg-[#de5422] text-white shadow-sm"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      }`}
                   >
                     {category.charAt(0).toUpperCase() + category.slice(1)}
                   </button>
@@ -338,7 +336,7 @@ export default function BlogsPage() {
 
                     {/* Read More Button */}
                     <Link
-                      href={`/blogs/${blog._id}`}
+                      href={`/news/${blog._id}`}
                       className="inline-flex items-center gap-2 group/link text-[#de5422] hover:text-orange-700 font-medium text-sm transition-colors duration-200"
                     >
                       Read More

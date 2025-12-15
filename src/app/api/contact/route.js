@@ -44,7 +44,7 @@ export async function POST(request) {
       if (error) {
         console.error('SMTP Connection Error:', error);
       } else {
-        console.log('SMTP Server is ready to take messages');
+
       }
     });
 

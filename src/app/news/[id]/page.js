@@ -15,10 +15,10 @@ export default function BlogDetails({ params }) {
   useEffect(() => {
     const fetchBlog = async () => {
       try {
-        const res = await fetch(`/api/blog/admin/${id}`);
+        const res = await fetch(`/api/news/admin/${id}`);
         if (!res.ok) throw new Error("Failed to fetch blog");
         const data = await res.json();
-        setBlog(data.blog);
+        setBlog(data.news);
       } catch (err) {
         console.error("Error fetching blog:", err);
       } finally {
@@ -29,11 +29,11 @@ export default function BlogDetails({ params }) {
   }, [id]);
 
   if (loading) {
-    return <p className="text-center py-10">Loading blog...</p>;
+    return <p className="text-center py-10">Loading news...</p>;
   }
 
   if (!blog) {
-    return <p className="text-center py-10">Blog not found.</p>;
+    return <p className="text-center py-10">News not found.</p>;
   }
 
   return (

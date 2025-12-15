@@ -1,6 +1,6 @@
 import { Poppins, Roboto } from "next/font/google";
 import "./globals.css";
-import "draft-js/dist/Draft.css";
+
 import { Toaster } from "react-hot-toast";
 
 const roboto = Roboto({

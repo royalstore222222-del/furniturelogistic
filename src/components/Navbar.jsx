@@ -15,12 +15,23 @@ export default function Navbar() {
   const [desktopSearchOpen, setDesktopSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [authChecked, setAuthChecked] = useState(false);
+  const [companyInfo, setCompanyInfo] = useState(null);
   const router = useRouter();
   const searchRef = useRef(null);
   const desktopSearchRef = useRef(null);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
+    // Fetch Company Profile
+    fetch("/api/company-profile")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.profile) {
+          setCompanyInfo(data.profile);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch company info:", err));
+
     // Check if auth state is cached
     const cachedAuth = localStorage.getItem("isLoggedIn");
     if (cachedAuth !== null) {
@@ -34,7 +45,8 @@ export default function Navbar() {
           method: "GET",
           credentials: "include",
         });
-        const loggedIn = res.ok;
+        const data = await res.json();
+        const loggedIn = data.authenticated === true;
         setIsLoggedIn(loggedIn);
         localStorage.setItem("isLoggedIn", loggedIn.toString());
       } catch {
@@ -115,6 +127,22 @@ export default function Navbar() {
     }
   };
 
+  // Helper to split company name for styling if needed, or just default behavior
+  const renderBrand = () => {
+    const name = companyInfo?.name || "Furniture Logistics UK";
+    const logo = companyInfo?.logo;
+
+    return (
+      <Link href="/" className="flex items-center gap-2">
+        {logo ? (
+          <img src={logo} alt={name} className="h-8 w-auto object-contain sm:h-10" />
+        ) : null}
+        <span className="text-gray-900">{name.split(' ')[0]}</span>{' '}
+        {name.split(' ').slice(1).join(' ')}
+      </Link>
+    );
+  };
+
   return (
     <nav className="bg-white shadow-lg fixed top-0 left-0 w-full z-40 font-[Poppins]">
       <div className="container mx-auto flex items-center justify-between px-4 py-3 sm:py-4 md:py-5">
@@ -123,9 +151,9 @@ export default function Navbar() {
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="text-xl md:text-2xl font-bold bg-[#de5422] bg-clip-text text-transparent cursor-pointer flex-1 md:flex-none"
+          className="text-xl md:text-2xl font-bold bg-[#de5422] bg-clip-text text-transparent cursor-pointer flex-1 md:flex-none flex items-center"
         >
-          <Link href="/"><span className="text-gray-900">Furniture</span> Logistics UK</Link>
+          {renderBrand()}
         </motion.div>
 
         {/* Desktop Search */}
@@ -172,10 +200,10 @@ export default function Navbar() {
           </motion.div>
           <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.95 }}>
             <Link
-              href="/blogs"
+              href="/news"
               className="hover:text-[#de5422] text-xl font-semibold transition-colors duration-200 px-2 py-1"
             >
-              Blogs
+              News
             </Link>
           </motion.div>
 
@@ -360,11 +388,11 @@ export default function Navbar() {
                 About
               </Link>
               <Link
-                href="/blogs"
+                href="/news"
                 className="py-2 hover:text-[#de5422] transition-colors font-medium"
                 onClick={() => setMenuOpen(false)}
               >
-                Blogs
+                News
               </Link>
 
               <div className="border-t border-gray-200 pt-4 mt-2">

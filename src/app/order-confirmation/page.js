@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function OrderConfirmationPage() {
+function OrderConfirmationContent() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -359,8 +359,8 @@ export default function OrderConfirmationPage() {
             ].map((step, index) => (
               <div key={step.status} className="flex flex-col items-center relative z-10">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${step.active
-                    ? "bg-[#de5422] text-white"
-                    : "bg-gray-300 text-gray-600"
+                  ? "bg-[#de5422] text-white"
+                  : "bg-gray-300 text-gray-600"
                   }`}>
                   {step.icon}
                 </div>
@@ -405,5 +405,20 @@ export default function OrderConfirmationPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OrderConfirmationPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#de5422] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <OrderConfirmationContent />
+    </Suspense>
   );
 }

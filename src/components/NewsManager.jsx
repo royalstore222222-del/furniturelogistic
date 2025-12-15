@@ -29,7 +29,7 @@ import {
   X
 } from "lucide-react";
 
-export default function BlogManager() {
+export default function NewsManager() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -66,19 +66,19 @@ export default function BlogManager() {
     },
   });
 
-  // ✅ Fetch Blogs
+  // ✅ Fetch News
   useEffect(() => {
-    fetchBlogs();
+    fetchNews();
   }, []);
 
-  const fetchBlogs = async () => {
+  const fetchNews = async () => {
     try {
-      const res = await fetch("/api/blog/admin", { cache: "no-store" });
+      const res = await fetch("/api/news/admin", { cache: "no-store" });
       const data = await res.json();
-      if (data.success) setBlogs(data.blogs || []);
+      if (data.success) setBlogs(data.news || []);
     } catch (err) {
       console.error("Fetch error:", err);
-      toast.error("Failed to fetch blogs");
+      toast.error("Failed to fetch news");
     } finally {
       setLoading(false);
     }
@@ -118,7 +118,7 @@ export default function BlogManager() {
     }
   };
 
-  // ✅ Save Blog (Create/Update)
+  // ✅ Save News (Create/Update)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -126,8 +126,8 @@ export default function BlogManager() {
     try {
       const method = editingId ? "PATCH" : "POST";
       const url = editingId
-        ? `/api/blog/admin/${editingId}`
-        : "/api/blog/admin";
+        ? `/api/news/admin/${editingId}`
+        : "/api/news/admin";
 
       const res = await fetch(url, {
         method,
@@ -140,36 +140,36 @@ export default function BlogManager() {
 
       const data = await res.json();
       if (data.success) {
-        toast.success(editingId ? "Blog updated successfully!" : "Blog created successfully!");
+        toast.success(editingId ? "News updated successfully!" : "News created successfully!");
         resetForm();
-        fetchBlogs();
+        fetchNews();
       } else {
-        toast.error(data.error || "Error saving blog");
+        toast.error(data.error || "Error saving news");
       }
     } catch (err) {
       console.error("Save error:", err);
-      toast.error("Failed to save blog");
+      toast.error("Failed to save news");
     } finally {
       setSubmitting(false);
     }
   };
 
-  // ✅ Edit Blog
-  const handleEdit = (blog) => {
+  // ✅ Edit News
+  const handleEdit = (news) => {
     setForm({
-      title: blog.title,
-      slug: blog.slug,
-      content: blog.content,
-      image: blog.image,
-      tags: blog.tags.join(", "),
-      category: blog.category,
-      status: blog.status,
+      title: news.title,
+      slug: news.slug,
+      content: news.content,
+      image: news.image,
+      tags: news.tags.join(", "),
+      category: news.category,
+      status: news.status,
     });
-    setEditingId(blog._id);
-    editor?.commands.setContent(blog.content);
+    setEditingId(news._id);
+    editor?.commands.setContent(news.content);
   };
 
-  // ✅ Delete Blog
+  // ✅ Delete News
   const handleDelete = (id) => {
     setBlogToDelete(id);
     setDeleteModalOpen(true);
@@ -179,17 +179,17 @@ export default function BlogManager() {
     if (!blogToDelete) return;
 
     try {
-      const res = await fetch(`/api/blog/admin/${blogToDelete}`, { method: "DELETE" });
+      const res = await fetch(`/api/news/admin/${blogToDelete}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
-        toast.success("Blog deleted successfully!");
-        fetchBlogs();
+        toast.success("News deleted successfully!");
+        fetchNews();
       } else {
-        toast.error("Error deleting blog");
+        toast.error("Error deleting news");
       }
     } catch (err) {
       console.error("Delete error:", err);
-      toast.error("Failed to delete blog");
+      toast.error("Failed to delete news");
     } finally {
       setDeleteModalOpen(false);
       setBlogToDelete(null);
@@ -201,10 +201,10 @@ export default function BlogManager() {
     setBlogToDelete(null);
   };
 
-  // ✅ Publish / Unpublish Blog
+  // ✅ Publish / Unpublish News
   const togglePublish = async (id, currentStatus) => {
     try {
-      const res = await fetch(`/api/blog/admin/${id}`, {
+      const res = await fetch(`/api/news/admin/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -215,15 +215,15 @@ export default function BlogManager() {
       const data = await res.json();
       if (data.success) {
         toast.success(
-          `Blog ${currentStatus === "draft" ? "published" : "unpublished"} successfully!`
+          `News ${currentStatus === "draft" ? "published" : "unpublished"} successfully!`
         );
-        fetchBlogs();
+        fetchNews();
       } else {
         toast.error("Error updating status");
       }
     } catch (err) {
       console.error("Publish error:", err);
-      toast.error("Failed to update blog status");
+      toast.error("Failed to update news status");
     }
   };
 
@@ -242,11 +242,11 @@ export default function BlogManager() {
     editor?.commands.clearContent();
   };
 
-  // ✅ Filtered blogs
-  const filteredBlogs = blogs.filter(blog => {
-    const matchesSearch = blog.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      blog.category?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || blog.status === statusFilter;
+  // ✅ Filtered news
+  const filteredBlogs = blogs.filter(news => {
+    const matchesSearch = news.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      news.category?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || news.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -349,17 +349,17 @@ export default function BlogManager() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#de5422] mb-2">Blog Manager</h1>
-          <p className="text-gray-600">Create and manage your blog posts</p>
+          <h1 className="text-3xl font-bold text-[#de5422] mb-2">News Manager</h1>
+          <p className="text-gray-600">Create and manage your news posts</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Blog Form Section */}
+          {/* News Form Section */}
           <div className="space-y-6">
             <div className="bg-white rounded-2xl shadow-lg border border-orange-200 p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-[#de5422]">
-                  {editingId ? "Edit Blog Post" : "Create New Blog Post"}
+                  {editingId ? "Edit News Post" : "Create New News Post"}
                 </h2>
                 {editingId && (
                   <button
@@ -372,7 +372,7 @@ export default function BlogManager() {
                 )}
               </div>
 
-              {/* Blog Form */}
+              {/* News Form */}
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
@@ -382,7 +382,7 @@ export default function BlogManager() {
                     <input
                       type="text"
                       name="title"
-                      placeholder="Enter blog title"
+                      placeholder="Enter news title"
                       value={form.title}
                       onChange={handleChange}
                       className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-[#de5422] focus:border-transparent outline-none transition duration-300"
@@ -396,7 +396,7 @@ export default function BlogManager() {
                     <input
                       type="text"
                       name="slug"
-                      placeholder="blog-post-slug"
+                      placeholder="news-post-slug"
                       value={form.slug}
                       onChange={handleChange}
                       className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-[#de5422] focus:border-transparent outline-none transition duration-300"
@@ -411,10 +411,10 @@ export default function BlogManager() {
                     Content *
                   </label>
                   <Toolbar />
-                  <div className="border border-gray-300 rounded-xl min-h-[300px] p-4 focus-within:ring-2 focus-within:ring-[#de5422] focus-within:border-transparent outline-none transition duration-300">
+                  <div className="border border-gray-300 rounded-xl min-h-[500px] p-4 focus-within:ring-2 focus-within:ring-[#de5422] focus-within:border-transparent outline-none transition duration-300 bg-white">
                     <EditorContent
                       editor={editor}
-                      className="prose prose-sm max-w-none min-h-[250px]"
+                      className="prose prose-sm sm:prose-base max-w-none min-h-[450px] outline-none [&_.ProseMirror]:min-h-[450px] [&_.ProseMirror]:outline-none"
                     />
                   </div>
                 </div>
@@ -506,7 +506,7 @@ export default function BlogManager() {
                     className="flex items-center gap-2 bg-[#de5422] text-white px-6 py-3 rounded-xl font-semibold hover:bg-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Save className="w-4 h-4" />
-                    {submitting ? (editingId ? "Updating..." : "Creating...") : (editingId ? "Update Blog" : "Create Blog")}
+                    {submitting ? (editingId ? "Updating..." : "Creating...") : (editingId ? "Update News" : "Create News")}
                   </button>
 
                   <button
@@ -523,14 +523,14 @@ export default function BlogManager() {
             </div>
           </div>
 
-          {/* Blog List Section */}
+          {/* News List Section */}
           <div className="space-y-6">
             {/* Filters */}
             <div className="bg-white rounded-2xl shadow-lg border border-orange-200 p-6">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Search Blogs
+                    Search News
                   </label>
                   <input
                     type="text"
@@ -557,11 +557,11 @@ export default function BlogManager() {
               </div>
             </div>
 
-            {/* Blog List */}
+            {/* News List */}
             <div className="bg-white rounded-2xl shadow-lg border border-orange-200 p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-[#de5422]">
-                  All Blog Posts
+                  All News Posts
                 </h3>
                 <span className="bg-orange-100 text-[#de5422] px-3 py-1 rounded-full text-sm font-medium">
                   {filteredBlogs.length} posts
@@ -575,64 +575,64 @@ export default function BlogManager() {
               ) : filteredBlogs.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <Edit3 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p>No blog posts found</p>
+                  <p>No news posts found</p>
                   {searchTerm || statusFilter !== "all" ? (
                     <p className="text-sm mt-2">Try adjusting your search or filters</p>
                   ) : (
-                    <p className="text-sm mt-2">Create your first blog post to get started</p>
+                    <p className="text-sm mt-2">Create your first news post to get started</p>
                   )}
                 </div>
               ) : (
                 <div className="space-y-4 max-h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-[#de5422]/70 scrollbar-track-transparent">
-                  {filteredBlogs.map((blog) => (
+                  {filteredBlogs.map((news) => (
                     <div
-                      key={blog._id}
+                      key={news._id}
                       className="p-4 border border-gray-200 rounded-xl hover:shadow-md transition-all duration-300 bg-gradient-to-br from-orange-50 to-amber-50"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <h4 className="font-semibold text-gray-900">{blog.title}</h4>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${blog.status === 'published'
+                            <h4 className="font-semibold text-gray-900">{news.title}</h4>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${news.status === 'published'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-yellow-100 text-yellow-800'
                               }`}>
-                              {blog.status}
+                              {news.status}
                             </span>
                           </div>
                           <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                            <span>Category: {blog.category || "Uncategorized"}</span>
+                            <span>Category: {news.category || "Uncategorized"}</span>
                             <span>•</span>
-                            <span>{blog.tags?.length || 0} tags</span>
+                            <span>{news.tags?.length || 0} tags</span>
                           </div>
-                          {blog.image && (
+                          {news.image && (
                             <img
-                              src={blog.image}
-                              alt={blog.title}
+                              src={news.image}
+                              alt={news.title}
                               className="w-16 h-12 object-cover rounded-lg border border-gray-300"
                             />
                           )}
                         </div>
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => handleEdit(blog)}
+                            onClick={() => handleEdit(news)}
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
                             title="Edit"
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => togglePublish(blog._id, blog.status)}
-                            className={`p-2 rounded-lg transition-colors duration-200 ${blog.status === 'draft'
+                            onClick={() => togglePublish(news._id, news.status)}
+                            className={`p-2 rounded-lg transition-colors duration-200 ${news.status === 'draft'
                               ? 'text-green-600 hover:bg-green-50'
                               : 'text-yellow-600 hover:bg-yellow-50'
                               }`}
-                            title={blog.status === 'draft' ? 'Publish' : 'Unpublish'}
+                            title={news.status === 'draft' ? 'Publish' : 'Unpublish'}
                           >
-                            {blog.status === 'draft' ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                            {news.status === 'draft' ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                           </button>
                           <button
-                            onClick={() => handleDelete(blog._id)}
+                            onClick={() => handleDelete(news._id)}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
                             title="Delete"
                           >
@@ -652,7 +652,7 @@ export default function BlogManager() {
       {/* Confirm Delete Modal */}
       <ConfirmModal
         show={deleteModalOpen}
-        message="Are you sure you want to delete this blog?"
+        message="Are you sure you want to delete this news?"
         onYes={confirmDelete}
         onNo={cancelDelete}
       />

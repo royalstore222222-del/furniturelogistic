@@ -88,7 +88,7 @@ export default function CategoryManager() {
     const handleAdd = async () => {
         if (!newCategory.name.trim()) return toast.error("Name is required");
         if (!newCategory.image) return toast.error("Image is required");
-        console.log("newCategory", newCategory);
+
 
         try {
             const res = await fetch("/api/category", {

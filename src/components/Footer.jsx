@@ -1,10 +1,11 @@
 "use client";
 import Link from "next/link";
-import { Facebook, Twitter, Instagram, Mail } from "lucide-react";
+import { Facebook, Twitter, Instagram, Mail, Linkedin, Youtube } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Footer() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [companyInfo, setCompanyInfo] = useState(null);
 
   useEffect(() => {
     // Check if we're in the browser before accessing localStorage
@@ -12,7 +13,25 @@ export default function Footer() {
       const token = localStorage.getItem("token");
       if (token) setIsLoggedIn(true);
     }
+
+    // Fetch Company Profile
+    fetch("/api/company-profile")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.profile) {
+          setCompanyInfo(data.profile);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch company info:", err));
   }, []);
+
+  const socialIconMap = {
+    facebook: Facebook,
+    twitter: Twitter,
+    instagram: Instagram,
+    linkedin: Linkedin,
+    youtube: Youtube,
+  };
 
   return (
     <footer className="relative bg-black text-gray-200 font-[Poppins] pt-16 pb-8 overflow-hidden">
@@ -21,12 +40,27 @@ export default function Footer() {
         {/* Brand Info */}
         <div>
           <h2 className="text-2xl font-bold text-white mb-4">
-            Furniture Logistics UK
+            {companyInfo?.name || "Furniture Logistics UK"}
           </h2>
           <p className="text-sm text-gray-400 leading-relaxed">
-            Premium furniture with fast & free delivery across the UK. Exclusive
-            designs, top quality, and affordable prices.
+            {companyInfo?.description ||
+              "Premium furniture with fast & free delivery across the UK. Exclusive designs, top quality, and affordable prices."}
           </p>
+          {companyInfo?.address && (
+            <p className="text-sm text-gray-400 mt-4">
+              {companyInfo.address}
+            </p>
+          )}
+          {companyInfo?.phone && (
+            <p className="text-sm text-gray-400 mt-2">
+              {companyInfo.phone}
+            </p>
+          )}
+          {companyInfo?.email && (
+            <p className="text-sm text-gray-400 mt-1">
+              {companyInfo.email}
+            </p>
+          )}
         </div>
 
         {/* Quick Links */}
@@ -39,7 +73,7 @@ export default function Footer() {
             {[
               ["Home", "/"],
               ["About", "/about"],
-              ["Blogs", "/blogs"],
+              ["News", "/news"],
               ["Shop", "/productlisting"],
             ].map(([name, href]) => (
               <li key={name}>
@@ -105,15 +139,35 @@ export default function Footer() {
           </form>
 
           <div className="flex gap-5 mt-6">
-            {[Facebook, Twitter, Instagram].map((Icon, i) => (
-              <a
-                key={i}
-                href="#"
-                className="p-2 rounded-full bg-white/10 hover:bg-gradient-to-r hover:from-amber-400 hover:to-orange-600 transition duration-300"
-              >
-                <Icon className="w-5 h-5 text-white" />
-              </a>
-            ))}
+            {companyInfo?.socialLinks ? (
+              Object.entries(companyInfo.socialLinks).map(([key, url]) => {
+                if (!url) return null;
+                const Icon = socialIconMap[key];
+                if (!Icon) return null;
+                return (
+                  <a
+                    key={key}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-full bg-white/10 hover:bg-gradient-to-r hover:from-amber-400 hover:to-orange-600 transition duration-300"
+                  >
+                    <Icon className="w-5 h-5 text-white" />
+                  </a>
+                );
+              })
+            ) : (
+              // Fallback social icons if no API data yet
+              [Facebook, Twitter, Instagram].map((Icon, i) => (
+                <a
+                  key={i}
+                  href="#"
+                  className="p-2 rounded-full bg-white/10 hover:bg-gradient-to-r hover:from-amber-400 hover:to-orange-600 transition duration-300"
+                >
+                  <Icon className="w-5 h-5 text-white" />
+                </a>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -122,7 +176,7 @@ export default function Footer() {
       <div className="relative mt-14 border-t border-white/10 pt-4 text-center text-sm text-white z-10">
         © {new Date().getFullYear()}{" "}
         <span className="text-[#de5422] font-semibold">
-          Furniture Logistics UK
+          {companyInfo?.name || "Furniture Logistics UK"}
         </span>
         . All rights reserved.
       </div>

@@ -23,6 +23,11 @@ export default function CheckoutPage() {
   const [formErrors, setFormErrors] = useState({});
   const [couponMessage, setCouponMessage] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
+  const [paymentSettings, setPaymentSettings] = useState({
+    cod: true,
+    stripe: false,
+  });
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("cod");
   const Router = useRouter();
 
   // Fetch cart and user data
@@ -35,7 +40,6 @@ export default function CheckoutPage() {
         ]);
 
         const cartData = await cartRes.json();
-        console.log("Cart data:", cartData); // Debug log
         setCart(cartData);
 
         // Pre-fill form with saved address if available
@@ -46,6 +50,21 @@ export default function CheckoutPage() {
               ...prev,
               ...userData.shippingAddress,
             }));
+          }
+        }
+
+        // Fetch payment settings
+        const settingsRes = await fetch("/api/settings");
+        if (settingsRes.ok) {
+          const settingsData = await settingsRes.json();
+          if (settingsData.success && settingsData.paymentMethods) {
+            setPaymentSettings(settingsData.paymentMethods);
+            // Set default selected method based on availability
+            if (settingsData.paymentMethods.cod) {
+              setSelectedPaymentMethod("cod");
+            } else if (settingsData.paymentMethods.stripe) {
+              setSelectedPaymentMethod("stripe");
+            }
           }
         }
       } catch (error) {
@@ -146,8 +165,7 @@ export default function CheckoutPage() {
         setDiscount(data.discountAmount || 0);
         setDiscountPercentage(data.discountPercentage || 0);
         setCouponMessage(
-          `🎉 Coupon applied! ${
-            data.discountPercentage ? `${data.discountPercentage}% off` : ""
+          `🎉 Coupon applied! ${data.discountPercentage ? `${data.discountPercentage}% off` : ""
           } Saved: £${data.discountAmount}`
         );
       } else {
@@ -182,6 +200,32 @@ export default function CheckoutPage() {
     setIsLoading(true);
 
     try {
+      // Handle Stripe Payment
+      if (selectedPaymentMethod === "stripe") {
+        const res = await fetch("/api/checkout/stripe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: cart.items,
+            email: formData.email,
+          }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.message || data.error || "Stripe payment failed");
+          setIsLoading(false);
+          return;
+        }
+
+        // In future: redirect to Stripe
+        // window.location.href = data.url;
+        alert("Stripe session created (Mock): " + JSON.stringify(data));
+        setIsLoading(false);
+        return;
+      }
+
+      // Handle COD (Existing Logic)
       const orderData = {
         items: cart.items.map((item) => {
           const customizations =
@@ -206,7 +250,7 @@ export default function CheckoutPage() {
         subtotal,
         discount,
         discountPercentage,
-        paymentMethod: "cod",
+        paymentMethod: selectedPaymentMethod,
         couponCode: coupon || null,
 
         shippingAddress: {
@@ -261,8 +305,8 @@ export default function CheckoutPage() {
       } else {
         alert(
           data.error ||
-            data.message ||
-            "Failed to place order. Please try again."
+          data.message ||
+          "Failed to place order. Please try again."
         );
       }
     } catch (err) {
@@ -315,11 +359,10 @@ export default function CheckoutPage() {
                       value={formData.firstName}
                       onChange={handleInputChange}
                       placeholder="John"
-                      className={`w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#de5422] focus:border-transparent outline-none transition duration-300 ${
-                        formErrors.firstName
-                          ? "border-red-500"
-                          : "border-[#de5422]"
-                      }`}
+                      className={`w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#de5422] focus:border-transparent outline-none transition duration-300 ${formErrors.firstName
+                        ? "border-red-500"
+                        : "border-[#de5422]"
+                        }`}
                       required
                     />
                     {formErrors.firstName && (
@@ -338,11 +381,10 @@ export default function CheckoutPage() {
                       value={formData.lastName}
                       onChange={handleInputChange}
                       placeholder="Doe"
-                      className={`w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#de5422] focus:border-transparent outline-none transition duration-300 ${
-                        formErrors.lastName
-                          ? "border-red-500"
-                          : "border-[#de5422]"
-                      }`}
+                      className={`w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#de5422] focus:border-transparent outline-none transition duration-300 ${formErrors.lastName
+                        ? "border-red-500"
+                        : "border-[#de5422]"
+                        }`}
                       required
                     />
                     {formErrors.lastName && (
@@ -363,11 +405,10 @@ export default function CheckoutPage() {
                     value={formData.streetAddress}
                     onChange={handleInputChange}
                     placeholder="123 Main Street"
-                    className={`w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#de5422] focus:border-transparent outline-none transition duration-300 ${
-                      formErrors.streetAddress
-                        ? "border-red-500"
-                        : "border-[#de5422]"
-                    }`}
+                    className={`w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#de5422] focus:border-transparent outline-none transition duration-300 ${formErrors.streetAddress
+                      ? "border-red-500"
+                      : "border-[#de5422]"
+                      }`}
                     required
                   />
                   {formErrors.streetAddress && (
@@ -388,9 +429,8 @@ export default function CheckoutPage() {
                       value={formData.city}
                       onChange={handleInputChange}
                       placeholder="London"
-                      className={`w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#de5422] focus:border-transparent outline-none transition duration-300 ${
-                        formErrors.city ? "border-red-500" : "border-[#de5422]"
-                      }`}
+                      className={`w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#de5422] focus:border-transparent outline-none transition duration-300 ${formErrors.city ? "border-red-500" : "border-[#de5422]"
+                        }`}
                       required
                     />
                     {formErrors.city && (
@@ -409,11 +449,10 @@ export default function CheckoutPage() {
                       value={formData.postalCode}
                       onChange={handleInputChange}
                       placeholder="SW1A 1AA"
-                      className={`w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#de5422] focus:border-transparent outline-none transition duration-300 ${
-                        formErrors.postalCode
-                          ? "border-red-500"
-                          : "border-[#de5422]"
-                      }`}
+                      className={`w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#de5422] focus:border-transparent outline-none transition duration-300 ${formErrors.postalCode
+                        ? "border-red-500"
+                        : "border-[#de5422]"
+                        }`}
                       required
                     />
                     {formErrors.postalCode && (
@@ -435,9 +474,8 @@ export default function CheckoutPage() {
                       value={formData.phone}
                       onChange={handleInputChange}
                       placeholder="+44 20 7946 0958"
-                      className={`w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#de5422] focus:border-transparent outline-none transition duration-300 ${
-                        formErrors.phone ? "border-red-500" : "border-[#de5422]"
-                      }`}
+                      className={`w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#de5422] focus:border-transparent outline-none transition duration-300 ${formErrors.phone ? "border-red-500" : "border-[#de5422]"
+                        }`}
                       required
                     />
                     {formErrors.phone && (
@@ -456,9 +494,8 @@ export default function CheckoutPage() {
                       value={formData.email}
                       onChange={handleInputChange}
                       placeholder="john@example.com"
-                      className={`w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#de5422] focus:border-transparent outline-none transition duration-300 ${
-                        formErrors.email ? "border-red-500" : "border-[#de5422]"
-                      }`}
+                      className={`w-full border rounded-xl p-3 focus:ring-2 focus:ring-[#de5422] focus:border-transparent outline-none transition duration-300 ${formErrors.email ? "border-red-500" : "border-[#de5422]"
+                        }`}
                       required
                     />
                     {formErrors.email && (
@@ -625,11 +662,10 @@ export default function CheckoutPage() {
 
                   {couponMessage && (
                     <div
-                      className={`mb-3 p-3 rounded-lg text-sm ${
-                        couponMessage.includes("applied")
-                          ? "bg-green-100 text-green-700 border border-green-300"
-                          : "bg-red-100 text-red-700 border border-red-300"
-                      }`}
+                      className={`mb-3 p-3 rounded-lg text-sm ${couponMessage.includes("applied")
+                        ? "bg-green-100 text-green-700 border border-green-300"
+                        : "bg-red-100 text-red-700 border border-red-300"
+                        }`}
                     >
                       {couponMessage}
                     </div>
@@ -710,26 +746,61 @@ export default function CheckoutPage() {
               </div>
 
               <div className="p-6 space-y-4">
-                <div className="bg-gradient-to-r from-orange-50 to-amber-100 border-2 border-[#de5422]/40 rounded-xl p-4 transition-all duration-300 hover:shadow-md">
-                  <label className="flex items-start space-x-3 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="payment"
-                      defaultChecked
-                      className="mt-1 w-5 h-5 text-[#de5422] border-[#de5422]/40 focus:ring-[#de5422]"
-                    />
-                    <div>
-                      <span className="font-semibold text-[#de5422]">
-                        Pay When You Receive (Cash on Delivery)
-                      </span>
-                      <p className="text-sm text-gray-700 mt-2 leading-relaxed">
-                        Pay securely by cash or bank transfer at the time of
-                        delivery — no advance payment needed. Your order will be
-                        processed immediately.
-                      </p>
-                    </div>
-                  </label>
-                </div>
+                {/* Cash on Delivery Option */}
+                {paymentSettings.cod && (
+                  <div className={`bg-gradient-to-r from-orange-50 to-amber-100 border-2 rounded-xl p-4 transition-all duration-300 hover:shadow-md ${selectedPaymentMethod === "cod" ? "border-[#de5422]/60 ring-1 ring-[#de5422]" : "border-transparent"}`}>
+                    <label className="flex items-start space-x-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="cod"
+                        checked={selectedPaymentMethod === "cod"}
+                        onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                        className="mt-1 w-5 h-5 text-[#de5422] border-[#de5422]/40 focus:ring-[#de5422]"
+                      />
+                      <div>
+                        <span className="font-semibold text-[#de5422]">
+                          Pay When You Receive (Cash on Delivery)
+                        </span>
+                        <p className="text-sm text-gray-700 mt-2 leading-relaxed">
+                          Pay securely by cash or bank transfer at the time of
+                          delivery — no advance payment needed.
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                )}
+
+                {/* Stripe Option */}
+                {paymentSettings.stripe && (
+                  <div className={`bg-white border-2 rounded-xl p-4 transition-all duration-300 hover:shadow-md ${selectedPaymentMethod === "stripe" ? "border-purple-500/60 ring-1 ring-purple-500 bg-purple-50" : "border-gray-200"}`}>
+                    <label className="flex items-start space-x-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="stripe"
+                        checked={selectedPaymentMethod === "stripe"}
+                        onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                        className="mt-1 w-5 h-5 text-purple-600 border-purple-300 focus:ring-purple-500"
+                      />
+                      <div>
+                        <span className="font-semibold text-gray-900 flex items-center gap-2">
+                          Pay with Card (Stripe)
+                          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Secure</span>
+                        </span>
+                        <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+                          Pay securely using your credit or debit card.
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                )}
+
+                {!paymentSettings.cod && !paymentSettings.stripe && (
+                  <div className="p-4 bg-red-50 text-red-600 rounded-xl text-center">
+                    No payment methods available. Please contact support.
+                  </div>
+                )}
 
                 <div className="flex items-center justify-center gap-2 text-[#de5422]/90 mt-4">
                   <span className="text-2xl">🔒</span>

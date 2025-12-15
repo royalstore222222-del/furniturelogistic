@@ -3,21 +3,31 @@ import User from "@/models/User";
 import Product from "@/models/Product";
 import Order from "@/models/Order";
 import Category from "@/models/Category";
-import Blog from "@/models/Blog";
+import News from "@/models/News";
 import Coupon from "@/models/Coupon";
+import { verifyAdminAuth } from "@/lib/adminAuth";
 
 // 📊 Get All Dashboard Statistics
 export async function GET(req) {
   try {
     await connectDB();
 
+    // Verify admin authentication
+    const auth = await verifyAdminAuth();
+    if (!auth.authenticated) {
+      return Response.json(
+        { success: false, error: auth.error || "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     // Fetch all data in parallel for better performance
-    const [products, orders, users, categories, blogs, coupons] = await Promise.all([
+    const [products, orders, users, categories, news, coupons] = await Promise.all([
       Product.find({}).populate("category"),
       Order.find({}).populate("user"),
       User.find({}),
       Category.find({}),
-      Blog.find({}),
+      News.find({}),
       Coupon.find({})
     ]);
 
@@ -26,7 +36,7 @@ export async function GET(req) {
     const totalOrders = orders.length;
     const totalUsers = users.length;
     const totalCategories = categories.length;
-    const totalBlogs = blogs.length;
+    const totalBlogs = news.length;
     const activeCoupons = coupons.filter(coupon => coupon.isActive).length;
 
     // Revenue calculations
@@ -42,7 +52,7 @@ export async function GET(req) {
     // Today's data
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const todayOrders = orders.filter(order => 
+    const todayOrders = orders.filter(order =>
       new Date(order.createdAt) >= today
     ).length;
 
@@ -68,8 +78,8 @@ export async function GET(req) {
     // Last 7 days data for trends
     const last7Days = new Date();
     last7Days.setDate(last7Days.getDate() - 7);
-    
-    const weeklyOrders = orders.filter(order => 
+
+    const weeklyOrders = orders.filter(order =>
       new Date(order.createdAt) >= last7Days
     ).length;
 
@@ -97,17 +107,17 @@ export async function GET(req) {
         time: product.createdAt
       }));
 
-    const recentBlogs = blogs
+    const recentNews = news
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .slice(0, 2)
-      .map(blog => ({
-        type: "blog",
-        message: `Blog post '${blog.title}' published`,
-        time: blog.createdAt
+      .map(item => ({
+        type: "news",
+        message: `News post '${item.title}' published`,
+        time: item.createdAt
       }));
 
     // Combine and sort all activities
-    const recentActivities = [...recentOrders, ...recentProducts, ...recentBlogs]
+    const recentActivities = [...recentOrders, ...recentProducts, ...recentNews]
       .sort((a, b) => new Date(b.time) - new Date(a.time))
       .slice(0, 10);
 
@@ -117,7 +127,7 @@ export async function GET(req) {
 
     // Product category distribution
     const categoryStats = categories.map(category => {
-      const productCount = products.filter(product => 
+      const productCount = products.filter(product =>
         product.category && product.category._id.toString() === category._id.toString()
       ).length;
       return {
@@ -134,8 +144,8 @@ export async function GET(req) {
     }, {});
 
     // Blog status distribution
-    const publishedBlogs = blogs.filter(blog => blog.status === "published").length;
-    const draftBlogs = blogs.filter(blog => blog.status === "draft").length;
+    const publishedBlogs = news.filter(item => item.status === "published").length;
+    const draftBlogs = news.filter(item => item.status === "draft").length;
 
     // Return comprehensive stats
     const stats = {

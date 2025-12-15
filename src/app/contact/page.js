@@ -315,7 +315,7 @@ export default function ContactUs() {
                   Send us a Message
                 </h2>
                 <p className="text-gray-600">
-                  Fill out the form below and we'll get back to you as soon as
+                  Fill out the form below and we&apos;ll get back to you as soon as
                   possible.
                 </p>
               </div>
@@ -333,11 +333,10 @@ export default function ContactUs() {
                       value={form.name}
                       onChange={handleChange}
                       placeholder="Enter your full name"
-                      className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 ${
-                        errors.name
+                      className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 ${errors.name
                           ? "border-red-500 focus:ring-red-200 bg-red-50"
                           : "border-gray-300 focus:ring-[#de5422] focus:ring-opacity-50 focus:border-[#de5422] hover:border-gray-400"
-                      }`}
+                        }`}
                     />
                     {errors.name && (
                       <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
@@ -368,11 +367,10 @@ export default function ContactUs() {
                       value={form.email}
                       onChange={handleChange}
                       placeholder="Enter your email address"
-                      className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 ${
-                        errors.email
+                      className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 ${errors.email
                           ? "border-red-500 focus:ring-red-200 bg-red-50"
                           : "border-gray-300 focus:ring-[#de5422] focus:ring-opacity-50 focus:border-[#de5422] hover:border-gray-400"
-                      }`}
+                        }`}
                     />
                     {errors.email && (
                       <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
@@ -424,11 +422,10 @@ export default function ContactUs() {
                       value={form.subject}
                       onChange={handleChange}
                       placeholder="What is this regarding?"
-                      className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 ${
-                        errors.subject
+                      className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 ${errors.subject
                           ? "border-red-500 focus:ring-red-200 bg-red-50"
                           : "border-gray-300 focus:ring-[#de5422] focus:ring-opacity-50 focus:border-[#de5422] hover:border-gray-400"
-                      }`}
+                        }`}
                     />
                     {errors.subject && (
                       <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
@@ -460,11 +457,10 @@ export default function ContactUs() {
                     onChange={handleChange}
                     rows={6}
                     placeholder="Please describe your inquiry in detail..."
-                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 resize-none ${
-                      errors.message
+                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 resize-none ${errors.message
                         ? "border-red-500 focus:ring-red-200 bg-red-50"
                         : "border-gray-300 focus:ring-[#de5422] focus:ring-opacity-50 focus:border-[#de5422] hover:border-gray-400"
-                    }`}
+                      }`}
                   />
                   {errors.message && (
                     <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
@@ -548,7 +544,7 @@ export default function ContactUs() {
               </form>
             </div>
           </div>
-          
+
           {/* FAQ Section - Three Columns */}
           <div
             id="faq"

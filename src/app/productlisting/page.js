@@ -50,7 +50,14 @@ const CategorySkeleton = () => (
   </div>
 );
 
-export default function ProductsPage() {
+import { Suspense } from "react";
+
+// ... previous imports ...
+
+// ... Skeleton Components ...
+
+function ProductListingContent() {
+  // ... existing component logic ...
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -63,6 +70,8 @@ export default function ProductsPage() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get("category");
   const initialQuery = searchParams.get("q");
+
+  // ... rest of the existing logic ...
 
   const PRODUCTS_API = "http://localhost:3000/api/productcard";
   const CATEGORIES_API = "http://localhost:3000/api/category";
@@ -415,7 +424,7 @@ export default function ProductsPage() {
                         alt={product.name}
                         width={500}
                         height={500}
-                        priority
+                        priority={index < 4}
                         className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
@@ -472,7 +481,7 @@ export default function ProductsPage() {
 
                     {/* View Details Button */}
                     <div className="mt-2">
-                      <button className="w-full bg-[#de5422] hover:bg-orange-700 text-white px-4 py-2.5 rounded-lg transition-colors duration-200 font-medium">
+                      <button className="w-full bg-[#de5422] hover:bg-orange-700 text-white px-4 py-2.5 rounded-lg transition-colors duration-200 font-medium hover:scale-105 cursor-pointer">
                         View Details
                       </button>
                     </div>
@@ -484,5 +493,13 @@ export default function ProductsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<ProductSkeleton />}>
+      <ProductListingContent />
+    </Suspense>
   );
 }

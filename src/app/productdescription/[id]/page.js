@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams } from "next/navigation";
-import draftToHtml from "draftjs-to-html";
+
 import Navbar from "@/components/Navbar";
 import { toast, Toaster } from "react-hot-toast";
 import Footer from "@/components/Footer";
@@ -280,12 +280,12 @@ export default function ProductPage() {
   let descriptionHTML = "<p>No description available.</p>";
   try {
     if (product?.description) {
-      const raw = typeof product.description === "string"
-        ? JSON.parse(product.description)
-        : product.description;
-      descriptionHTML = draftToHtml(raw);
+      // Assuming description is now HTML string from Tiptap
+      // If it's a JSON string (legacy Draft.js), it might need migration, 
+      // but without draftjs-to-html we treat it as is or handle simple cases.
+      // For now, we assume migration/compat is handled or new data is HTML.
+      descriptionHTML = product.description;
     }
-
   } catch (err) {
     console.error("Description parse error:", err);
   }

@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import AdminLogin from "@/components/AdminLogin";
+import PaymentSettings from "@/components/admin/PaymentSettings";
 import CategoryManager from "@/components/Category";
 import ProductManager from "@/components/Product";
 import TickerManager from "@/components/TickerManager";
@@ -9,15 +11,45 @@ import ManageHero from "@/components/ManageHero";
 import Coupon from "@/components/Coupon";
 import DeliveryRoutesManager from "@/components/DeliveryManagment";
 import OrderManagment from "@/components/OrderManagment";
-import BlogManager from "@/components/BlogManager";
+import NewsManager from "@/components/NewsManager";
 import AdminOverview from "@/components/AdminOverview";
 import AdminManagement from "@/components/AdminManagement";
+import CompanyProfileManager from "@/components/CompanyProfileManager";
+import CancellationRequests from "@/components/CancellationRequests";
+import ReturnRequests from "@/components/ReturnRequests";
+import { Settings } from "lucide-react";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
+
+  // Check authentication status on mount
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch("/api/check-auth");
+      const data = await res.json();
+
+      if (data.authenticated && data.user?.role === "admin") {
+        setIsAuthenticated(true);
+        setIsAdmin(true);
+      } else {
+        setIsAuthenticated(false);
+        setIsAdmin(false);
+      }
+    } catch (error) {
+      console.error("Auth check failed:", error);
+      setIsAuthenticated(false);
+      setIsAdmin(false);
+    }
+  };
 
   // Check if mobile on mount and resize
   useEffect(() => {
@@ -65,10 +97,18 @@ export default function Dashboard() {
         return <DeliveryRoutesManager />;
       case "orders":
         return <OrderManagment />;
-      case "blogs":
-        return <BlogManager />;
+      case "news":
+        return <NewsManager />;
+      case "settings":
+        return <PaymentSettings />;
+      case "cancellations":
+        return <CancellationRequests />;
+      case "returns":
+        return <ReturnRequests />;
       case "admins":
         return <AdminManagement />;
+      case "profile":
+        return <CompanyProfileManager />;
       default:
         return (
           <div className="flex items-center justify-center h-64">
@@ -87,8 +127,12 @@ export default function Dashboard() {
     { id: "coupon", label: "Coupon Management", icon: "🎟️" },
     { id: "delivery", label: "Delivery Routes", icon: "🚚" },
     { id: "orders", label: "Order Management", icon: "📦" },
-    { id: "blogs", label: "Blog Management", icon: "✍️" },
+    { id: "cancellations", label: "Cancellation Requests", icon: "🚫" },
+    { id: "returns", label: "Return Requests", icon: "↩️" },
+    { id: "news", label: "News Management", icon: "✍️" },
     { id: "admins", label: "Manage User", icon: "🛡️" },
+    { id: "settings", label: "Settings", icon: <Settings className="w-5 h-5" /> },
+    { id: "profile", label: "Company Profile", icon: "🏢" },
   ];
 
   const handleTabChange = (tabId) => {
@@ -97,6 +141,23 @@ export default function Dashboard() {
       setSidebarOpen(false);
     }
   };
+
+  // Show loading state while checking authentication
+  if (isAuthenticated === null) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mb-4"></div>
+          <p className="text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login if not authenticated or not admin
+  if (!isAuthenticated || !isAdmin) {
+    return <AdminLogin onLoginSuccess={checkAuth} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -240,6 +301,17 @@ export default function Dashboard() {
                 {menuItems.find(item => item.id === activeTab)?.label.split(' ')[0]}
               </span>
             </div>
+
+            <button
+              onClick={() => setActiveTab("settings")}
+              className="flex flex-col items-center p-2 text-gray-600 hover:text-[#de5422] transition-colors flex-1"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span className="text-xs mt-1">Settings</span>
+            </button>
 
             <button
               onClick={handleLogout}

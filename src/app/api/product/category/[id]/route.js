@@ -1,19 +1,16 @@
-import dbConnect from "@/lib/dbConnect";
+import { connectDB } from "@/lib/db";
 import Product from "@/models/Product";
+import { NextResponse } from "next/server";
 
-export default async function handler(req, res) {
-  await dbConnect();
+export async function GET(req, { params }) {
+  try {
+    await connectDB();
+    const { id } = params;
 
-  const { id } = req.query; // categoryId from URL
-
-  if (req.method === "GET") {
-    try {
-      const products = await Product.find({ category: id }).populate("category");
-      res.status(200).json({ success: true, data: products });
-    } catch (error) {
-      res.status(500).json({ success: false, message: "Server Error" });
-    }
-  } else {
-    res.status(405).json({ success: false, message: "Method Not Allowed" });
+    const products = await Product.find({ category: id }).populate("category");
+    return NextResponse.json({ success: true, data: products }, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching products by category:", error);
+    return NextResponse.json({ success: false, message: "Server Error" }, { status: 500 });
   }
 }

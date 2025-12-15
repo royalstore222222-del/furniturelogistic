@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
+import { verifyAdminAuth } from "@/lib/adminAuth";
 
 // GET: List all users (Admin only)
 export async function GET(req) {
@@ -8,10 +9,10 @@ export async function GET(req) {
         await connectDB();
 
         // Verify Admin
-        const userId = req.headers.get("x-user-id");
-        const adminUser = await User.findById(userId);
-        if (!adminUser || adminUser.role !== "admin") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+        // Verify Admin
+        const auth = await verifyAdminAuth();
+        if (!auth.authenticated) {
+            return NextResponse.json({ error: auth.error || "Unauthorized" }, { status: 401 });
         }
 
         // Fetch all users, sorted by role (admins first) then name
@@ -35,11 +36,13 @@ export async function PATCH(req) {
         await connectDB();
 
         // Verify Admin
-        const userId = req.headers.get("x-user-id");
-        const adminUser = await User.findById(userId);
-        if (!adminUser || adminUser.role !== "admin") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+        // Verify Admin
+        const auth = await verifyAdminAuth();
+        if (!auth.authenticated) {
+            return NextResponse.json({ error: auth.error || "Unauthorized" }, { status: 401 });
         }
+
+        const userId = auth.user.id;
 
         const { targetUserId, newRole } = await req.json();
 
@@ -91,11 +94,13 @@ export async function DELETE(req) {
         await connectDB();
 
         // Verify Admin
-        const userId = req.headers.get("x-user-id");
-        const adminUser = await User.findById(userId);
-        if (!adminUser || adminUser.role !== "admin") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+        // Verify Admin
+        const auth = await verifyAdminAuth();
+        if (!auth.authenticated) {
+            return NextResponse.json({ error: auth.error || "Unauthorized" }, { status: 401 });
         }
+
+        const userId = auth.user.id;
 
         const { searchParams } = new URL(req.url);
         const targetUserId = searchParams.get("id");

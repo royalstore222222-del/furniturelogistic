@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import RichTextEditor from "@/components/TextEditor";
+import TiptapEditor from "@/components/TiptapEditor";
 import ConfirmModal from "./ConfirmModal";
 import {
   Plus,
@@ -33,24 +33,11 @@ export default function ProductManager() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [userId, setUserId] = useState(null);
 
-  const EMPTY_EDITOR = {
-    blocks: [
-      {
-        key: "init",
-        text: "",
-        type: "unstyled",
-        depth: 0,
-        inlineStyleRanges: [],
-        entityRanges: [],
-        data: {}
-      }
-    ],
-    entityMap: {}
-  };
+  /* Removed Draft.js constants */
 
   const emptyForm = {
     name: "",
-    description: EMPTY_EDITOR,
+    description: "",
     basePrice: "",
     discount: "",
     thumbnail: "",
@@ -197,10 +184,10 @@ export default function ProductManager() {
       return toast.error("Subcategory is required for this category");
     }
     if (!form.basePrice) return toast.error("Base price is required");
+    if (isNaN(form.basePrice) || Number(form.basePrice) < 0) return toast.error("Base price must be a positive number");
 
     // Description validation
-    const descriptionText = form.description?.blocks?.[0]?.text?.trim();
-    if (!descriptionText) return toast.error("Description is required");
+    if (!form.description || form.description === "<p></p>") return toast.error("Description is required");
 
     // Image validation
     if (!form.thumbnail) return toast.error("Thumbnail image is required");
@@ -277,9 +264,7 @@ export default function ProductManager() {
     setEditingId(product._id);
     setForm({
       name: product.name || "",
-      description: typeof product.description === 'string'
-        ? JSON.parse(product.description)
-        : (product.description || EMPTY_EDITOR),
+      description: product.description || "",
       basePrice: product.basePrice || "",
       discount: product.discount || 0,
       thumbnail: product.thumbnail || "",
@@ -314,9 +299,7 @@ export default function ProductManager() {
             <h3 className="font-semibold text-gray-900 text-sm leading-tight truncate">
               {product.name}
             </h3>
-            <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-              {product.description?.blocks?.[0]?.text || "No description"}
-            </p>
+            <div className="text-xs text-gray-500 mt-1 line-clamp-2" dangerouslySetInnerHTML={{ __html: product.description || "No description" }} />
             <div className="flex items-center gap-2 mt-2">
               <span className="inline-flex items-center gap-1 bg-orange-100 text-[#de5422] px-2 py-1 rounded-full text-xs">
                 <Tag className="w-3 h-3" />
@@ -487,7 +470,7 @@ export default function ProductManager() {
                           <div>
                             <div className="font-semibold text-gray-900">{product.name}</div>
                             <div className="text-sm text-gray-500 line-clamp-2">
-                              {product.description?.blocks?.[0]?.text || "No description"}
+                              <div className="text-sm text-gray-500 line-clamp-2" dangerouslySetInnerHTML={{ __html: product.description || "No description" }} />
                             </div>
                           </div>
                         </div>
@@ -682,10 +665,18 @@ export default function ProductManager() {
                     <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                       Description *
                     </label>
-                    <RichTextEditor
-                      value={form.description}
+                    <TiptapEditor
+                      content={form.description}
                       onChange={(value) => setForm((prev) => ({ ...prev, description: value }))}
-                      required
+                      onUpload={async (file) => {
+                        try {
+                          const url = await uploadImage(file);
+                          return url;
+                        } catch (error) {
+                          console.error("Editor upload failed:", error);
+                          throw error;
+                        }
+                      }}
                     />
                   </div>
                 </div>

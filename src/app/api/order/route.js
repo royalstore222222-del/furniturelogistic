@@ -9,7 +9,7 @@ export async function POST(req) {
   await connectDB();
   try {
     const body = await req.json();
-    console.log("Order body:", body);
+
 
     // ✅ user id from middleware header
     const userId = req.headers.get("x-user-id");

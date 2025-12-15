@@ -4,13 +4,13 @@ import jwt from "jsonwebtoken";
 export async function GET() {
   try {
     // ✅ async call
-    const cookieStore = await cookies(); 
+    const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
 
     if (!token) {
       return new Response(
-        JSON.stringify({ authenticated: false }), 
-        { status: 401 }
+        JSON.stringify({ authenticated: false }),
+        { status: 200 }
       );
     }
 
@@ -18,13 +18,13 @@ export async function GET() {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     return new Response(
-      JSON.stringify({ authenticated: true, user: decoded }), 
+      JSON.stringify({ authenticated: true, user: decoded }),
       { status: 200 }
     );
   } catch (err) {
     return new Response(
-      JSON.stringify({ authenticated: false, error: err.message }), 
-      { status: 401 }
+      JSON.stringify({ authenticated: false, error: err.message }),
+      { status: 200 }
     );
   }
 }

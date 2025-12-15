@@ -8,7 +8,7 @@ export async function POST(req) {
     await connectDB();
 
     const body = await req.json();
-    console.log("Request body:", body);
+
     const userId = req.headers.get("x-user-id");
 
     if (!userId) {

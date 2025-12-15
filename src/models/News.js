@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 
-const blogSchema = new mongoose.Schema(
+const newsSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true }, // SEO-friendly URL
-    content: { type: String, required: true }, // blog ka main content (HTML / Markdown)
+    content: { type: String, required: true }, // news ka main content (HTML / Markdown)
     image: { type: String }, // Cloudinary / S3 image URL
     tags: [{ type: String }], // ["nextjs", "react", "mongodb"]
     category: { type: String }, // "Development", "Design", etc.
@@ -13,4 +13,5 @@ const blogSchema = new mongoose.Schema(
   { timestamps: true } // createdAt, updatedAt auto add
 );
 
-export default mongoose.models.Blog || mongoose.model("Blog", blogSchema);
+// Explicitly use "blogs" collection to prevent data loss
+export default mongoose.models.News || mongoose.model("News", newsSchema, "news");

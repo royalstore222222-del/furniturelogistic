@@ -40,7 +40,9 @@ export default function AdminOverview() {
       totalBlogs: 0,
       activeCoupons: 0,
       todayOrders: 0,
-      monthlyRevenue: 0
+      monthlyRevenue: 0,
+      cancellationRequests: 0,
+      returnRequests: 0
     },
     orderStatus: {},
     userStats: {},
@@ -61,7 +63,7 @@ export default function AdminOverview() {
     try {
       const response = await fetch("/api/admin/stats");
       const result = await response.json();
-      
+
       if (result.success) {
         setStats(result.data);
       } else {
@@ -153,7 +155,7 @@ export default function AdminOverview() {
       description: "Product categories"
     },
     {
-      title: "Blog Posts",
+      title: "NEWS",
       value: stats.overview.totalBlogs,
       icon: FileText,
       color: "from-teal-500 to-cyan-500",
@@ -162,6 +164,28 @@ export default function AdminOverview() {
       change: "+7%",
       changeType: "positive",
       description: "Published articles"
+    },
+    {
+      title: "Cancellation Requests",
+      value: stats.overview.cancellationRequests,
+      icon: AlertCircle,
+      color: "from-orange-500 to-red-500",
+      bgColor: "bg-gradient-to-br from-orange-50 to-red-50",
+      borderColor: "border-orange-200",
+      change: stats.overview.cancellationRequests > 0 ? "Needs attention" : "All clear",
+      changeType: stats.overview.cancellationRequests > 0 ? "negative" : "positive",
+      description: "Pending review"
+    },
+    {
+      title: "Return Requests",
+      value: stats.overview.returnRequests,
+      icon: Package,
+      color: "from-blue-500 to-indigo-500",
+      bgColor: "bg-gradient-to-br from-blue-50 to-indigo-50",
+      borderColor: "border-blue-200",
+      change: stats.overview.returnRequests > 0 ? "Needs attention" : "All clear",
+      changeType: stats.overview.returnRequests > 0 ? "negative" : "positive",
+      description: "Pending approval"
     }
   ];
 
@@ -194,7 +218,7 @@ export default function AdminOverview() {
     const time = new Date(timeString);
     const now = new Date();
     const diffInMinutes = Math.floor((now - time) / (1000 * 60));
-    
+
     if (diffInMinutes < 60) {
       return `${diffInMinutes} min ago`;
     } else if (diffInMinutes < 1440) {
@@ -248,7 +272,7 @@ export default function AdminOverview() {
             </div>
           </div>
         </div>
-        
+
         {/* Animated Background Elements */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
@@ -262,13 +286,13 @@ export default function AdminOverview() {
             key={card.title}
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ 
+            transition={{
               delay: index * 0.1,
               duration: 0.5,
               type: "spring",
               stiffness: 100
             }}
-            whileHover={{ 
+            whileHover={{
               y: -5,
               scale: 1.02,
               transition: { duration: 0.2 }
@@ -277,7 +301,7 @@ export default function AdminOverview() {
           >
             {/* Background Gradient Effect */}
             <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
-            
+
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -289,7 +313,7 @@ export default function AdminOverview() {
                   <card.icon className="w-6 h-6 text-white" />
                 </div>
               </div>
-              
+
               <div className="flex items-center justify-between mt-4">
                 <div className="flex items-center">
                   {card.changeType === "positive" ? (
@@ -329,7 +353,7 @@ export default function AdminOverview() {
               </span>
             </div>
           </div>
-          
+
           {/* Revenue Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
@@ -356,7 +380,7 @@ export default function AdminOverview() {
                 { label: "This Week", value: stats.overview.weeklyRevenue || 0, total: stats.overview.totalRevenue, color: "bg-gradient-to-r from-purple-500 to-pink-500" },
                 { label: "This Month", value: stats.overview.monthlyRevenue, total: stats.overview.totalRevenue, color: "bg-gradient-to-r from-amber-500 to-orange-500" }
               ].map((item, index) => (
-                <motion.div 
+                <motion.div
                   key={item.label}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -366,11 +390,11 @@ export default function AdminOverview() {
                   <span className="text-sm font-medium text-gray-700 w-24">{item.label}</span>
                   <div className="flex items-center gap-4 flex-1 max-w-md">
                     <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
-                      <motion.div 
+                      <motion.div
                         className={`h-3 rounded-full ${item.color} shadow-lg`}
                         initial={{ width: 0 }}
-                        animate={{ 
-                          width: `${Math.min((item.value / Math.max(item.total, 1)) * 100, 100)}%` 
+                        animate={{
+                          width: `${Math.min((item.value / Math.max(item.total, 1)) * 100, 100)}%`
                         }}
                         transition={{ delay: index * 0.2 + 0.5, duration: 1, type: "spring" }}
                       ></motion.div>
@@ -421,14 +445,14 @@ export default function AdminOverview() {
               </span>
             </div>
           </div>
-          
+
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {stats.recentActivities.length > 0 ? (
               stats.recentActivities.map((activity, index) => {
                 const IconComponent = getActivityIcon(activity.type);
                 const gradient = getActivityColor(activity.type);
                 return (
-                  <motion.div 
+                  <motion.div
                     key={index}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -477,33 +501,33 @@ export default function AdminOverview() {
           <CheckCircle className="w-6 h-6 mr-3 text-green-500" />
           System Status & Performance
         </h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { 
-              name: "Database", 
-              status: "Connected", 
+            {
+              name: "Database",
+              status: "Connected",
               color: "from-green-500 to-emerald-500",
               icon: CheckCircle,
               description: "All systems operational"
             },
-            { 
-              name: "API Server", 
-              status: "Running", 
+            {
+              name: "API Server",
+              status: "Running",
               color: "from-green-500 to-emerald-500",
               icon: Zap,
               description: "Response time: 120ms"
             },
-            { 
-              name: "Cloudinary", 
-              status: "Connected", 
+            {
+              name: "Cloudinary",
+              status: "Connected",
               color: "from-green-500 to-emerald-500",
               icon: CheckCircle,
               description: "Media storage active"
             },
-            { 
-              name: "Performance", 
-              status: "Excellent", 
+            {
+              name: "Performance",
+              status: "Excellent",
               color: "from-amber-500 to-orange-500",
               icon: Rocket,
               description: "98.7% uptime"

@@ -101,7 +101,7 @@ export const sendOTPEmail = async (email, otp) => {
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent successfully:", info.messageId);
+
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error("Error sending email:", error);
@@ -113,7 +113,7 @@ export const sendOTPEmail = async (email, otp) => {
 export const testEmailConnection = async () => {
   try {
     await transporter.verify();
-    console.log("Email service configuration check passed");
+
     return true;
   } catch (error) {
     console.error("Email service error:", error);
