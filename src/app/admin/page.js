@@ -18,6 +18,7 @@ import CompanyProfileManager from "@/components/CompanyProfileManager";
 import CancellationRequests from "@/components/CancellationRequests";
 import ReturnRequests from "@/components/ReturnRequests";
 import { Settings } from "lucide-react";
+import { authService } from "@/lib/auth";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -34,16 +35,9 @@ export default function Dashboard() {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch("/api/check-auth");
-      const data = await res.json();
-
-      if (data.authenticated && data.user?.role === "admin") {
-        setIsAuthenticated(true);
-        setIsAdmin(true);
-      } else {
-        setIsAuthenticated(false);
-        setIsAdmin(false);
-      }
+      const { isAuthenticated, user, isAdmin } = await authService.checkAuth();
+      setIsAuthenticated(isAuthenticated);
+      setIsAdmin(isAdmin);
     } catch (error) {
       console.error("Auth check failed:", error);
       setIsAuthenticated(false);
@@ -70,8 +64,7 @@ export default function Dashboard() {
 
   const handleLogout = async () => {
     try {
-      const res = await fetch("/api/logout", { method: "POST" });
-      if (!res.ok) throw new Error("Logout failed");
+      await authService.logout();
       toast.success("✅ Logged out successfully");
       router.push("/");
     } catch (e) {

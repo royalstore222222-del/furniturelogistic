@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart, User, LogOut, Search, Menu, X } from "lucide-react";
-
+import { apiClient } from "@/lib/api";
 export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [cartCount, setCartCount] = useState(3);
@@ -23,29 +23,24 @@ export default function Navbar() {
 
   useEffect(() => {
     // Fetch Company Profile
-    fetch("/api/company-profile")
-      .then((res) => res.json())
+    apiClient.get("/api/company-profile")
       .then((data) => {
         if (data.success && data.profile) {
           setCompanyInfo(data.profile);
         }
       })
       .catch((err) => console.error("Failed to fetch company info:", err));
-
+  
     // Check if auth state is cached
     const cachedAuth = localStorage.getItem("isLoggedIn");
     if (cachedAuth !== null) {
       setIsLoggedIn(cachedAuth === "true");
       setAuthChecked(true);
     }
-
+  
     const checkAuth = async () => {
       try {
-        const res = await fetch("/api/check-auth", {
-          method: "GET",
-          credentials: "include",
-        });
-        const data = await res.json();
+        const data = await apiClient.get("/api/check-auth");
         const loggedIn = data.authenticated === true;
         setIsLoggedIn(loggedIn);
         localStorage.setItem("isLoggedIn", loggedIn.toString());
@@ -56,30 +51,25 @@ export default function Navbar() {
         setAuthChecked(true);
       }
     };
-
+  
     // Only check auth if not already checked or cached
     if (!authChecked) {
       checkAuth();
     }
-
+  
     const fetchCartCount = async () => {
       try {
-        const res = await fetch("/api/cart/count", {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!res.ok) return;
-        const data = await res.json();
+        const data = await apiClient.get("/api/cart/count");
         if (typeof data.totalItems === "number") setCartCount(data.totalItems);
       } catch (err) {
         console.error("Cart count fetch error:", err);
       }
     };
-
+  
     if (isLoggedIn) {
       fetchCartCount();
     }
-
+  
     // Close dropdown when clicking outside
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -92,13 +82,12 @@ export default function Navbar() {
         setDesktopSearchOpen(false);
       }
     };
-
+  
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isLoggedIn, authChecked]);
-
   useEffect(() => {
     if (searchOpen && searchRef.current) {
       searchRef.current.focus();
@@ -107,7 +96,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/logout", { method: "POST" });
+      await apiClient.post("/api/logout");
       setIsLoggedIn(false);
       setDropdownOpen(false);
       localStorage.removeItem("isLoggedIn"); // Clear cache
@@ -116,7 +105,6 @@ export default function Navbar() {
       console.error("Logout failed", error);
     }
   };
-
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {

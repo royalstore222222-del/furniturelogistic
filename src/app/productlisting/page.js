@@ -73,8 +73,8 @@ function ProductListingContent() {
 
   // ... rest of the existing logic ...
 
-  const PRODUCTS_API = "http://localhost:3000/api/productcard";
-  const CATEGORIES_API = "http://localhost:3000/api/category";
+const PRODUCTS_API = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/productcard`;
+const CATEGORIES_API = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/category`;
 
   useEffect(() => {
     fetchProducts();

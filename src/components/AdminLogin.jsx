@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { authService } from "@/lib/auth";
 
 export default function AdminLogin({ onLoginSuccess }) {
     const [form, setForm] = useState({ email: "", password: "" });
@@ -51,45 +52,8 @@ export default function AdminLogin({ onLoginSuccess }) {
         setLoading(true);
 
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-            const res = await fetch("/api/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Requested-With": "XMLHttpRequest"
-                },
-                body: JSON.stringify({
-                    email: form.email.trim().toLowerCase(),
-                    password: form.password
-                }),
-                signal: controller.signal
-            });
-
-            clearTimeout(timeoutId);
-
-            if (!res.ok) {
-                const errorData = await res.json().catch(() => ({ message: "Network error" }));
-
-                switch (res.status) {
-                    case 401:
-                        toast.error(errorData.message || "Invalid password");
-                        break;
-                    case 404:
-                        toast.error(errorData.message || "Email not found");
-                        break;
-                    case 403:
-                        toast.error("Account suspended or inactive");
-                        break;
-                    default:
-                        toast.error(errorData.message || "Login failed");
-                }
-                return;
-            }
-
-            const data = await res.json();
-
+            const data = await authService.login(form.email, form.password);
+                
             // Check if user is admin
             if (data.role !== "admin") {
                 toast.error("Access denied. Admin privileges required.");
@@ -102,13 +66,8 @@ export default function AdminLogin({ onLoginSuccess }) {
             if (onLoginSuccess) {
                 onLoginSuccess();
             }
-
-        } catch (err) {
-            if (err.name === 'AbortError') {
-                toast.error("Request timeout. Please try again.");
-            } else {
-                toast.error("Network error. Please check your connection.");
-            }
+        } catch (error) {
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }
